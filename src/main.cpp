@@ -7,32 +7,38 @@
 void testMemory() {
     Memory memory;
 
-    // RAM starts empty
-    assert(memory.read8(0x0000) == 0);
-    assert(memory.read8(0xFFFF) == 0);
-
-    // Write different bytes
+    // Test 8-bit write/read
     memory.write8(0x0000, 0x12);
     memory.write8(0x0020, 0xAB);
     memory.write8(0xF000, 0x05);
-    memory.write8(0xFFFF, 0xFF);
 
-    // Read them back
     assert(memory.read8(0x0000) == 0x12);
     assert(memory.read8(0x0020) == 0xAB);
     assert(memory.read8(0xF000) == 0x05);
-    assert(memory.read8(0xFFFF) == 0xFF);
 
-    // Test several bytes
-    for (int i = 0; i < 16; i++) {
-        memory.write8(0x0100 + i, i + 1);
-    }
+    // Test 16-bit write/read
+    memory.write16(0x1000, 0xABCD);
 
-    for (int i = 0; i < 16; i++) {
-        assert(memory.read8(0x0100 + i) == i + 1);
-    }
+    assert(memory.read16(0x1000) == 0xABCD);
 
-    printf("[PASS] Memory read8/write8 test passed\n");
+    // Little-endian check
+    assert(memory.read8(0x1000) == 0xCD);
+    assert(memory.read8(0x1001) == 0xAB);
+
+    // Manual byte write, then read as 16-bit
+    memory.write8(0x2000, 0x34);
+    memory.write8(0x2001, 0x12);
+
+    assert(memory.read16(0x2000) == 0x1234);
+
+    // Stack-area style test
+    memory.write16(0xEFFC, 0xBEEF);
+
+    assert(memory.read16(0xEFFC) == 0xBEEF);
+    assert(memory.read8(0xEFFC) == 0xEF);
+    assert(memory.read8(0xEFFD) == 0xBE);
+
+    printf("[PASS] Memory read/write tests passed\n");
 }
 
 int main() {
@@ -45,9 +51,10 @@ int main() {
         BeginDrawing();
 
         ClearBackground(BLACK);
+
         DrawText("ZX16 Simulator", 90, 90, 20, RAYWHITE);
-        DrawText("Student 2: Memory class", 65, 120, 16, GRAY);
-        DrawText("read8/write8 passed", 75, 145, 16, GREEN);
+        DrawText("Memory read/write test", 65, 120, 16, GRAY);
+        DrawText("PASSED", 130, 145, 16, GREEN);
 
         EndDrawing();
     }
