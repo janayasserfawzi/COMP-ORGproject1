@@ -222,6 +222,18 @@ void CPU::handleBType(DecodedInstruction instruction) {
     unsigned short rs1Value = registers.getRegister(instruction.rs1);
     unsigned short rs2Value = registers.getRegister(instruction.rs2);
 
+    int rs1Signed = rs1Value;
+    int rs2Signed = rs2Value;
+
+    // Convert 16-bit unsigned register values to signed values
+    if ((rs1Value & 0x8000) != 0) {
+        rs1Signed = rs1Value - 0x10000;
+    }
+
+    if ((rs2Value & 0x8000) != 0) {
+        rs2Signed = rs2Value - 0x10000;
+    }
+
     // BEQ rs1, rs2, label
     if (instruction.func3 == 0x0) {
         if (rs1Value == rs2Value) {
@@ -232,6 +244,48 @@ void CPU::handleBType(DecodedInstruction instruction) {
     // BNE rs1, rs2, label
     if (instruction.func3 == 0x1) {
         if (rs1Value != rs2Value) {
+            pc = pc + instruction.immediate;
+        }
+    }
+
+    // BZ rs1, label
+    if (instruction.func3 == 0x2) {
+        if (rs1Value == 0) {
+            pc = pc + instruction.immediate;
+        }
+    }
+
+    // BNZ rs1, label
+    if (instruction.func3 == 0x3) {
+        if (rs1Value != 0) {
+            pc = pc + instruction.immediate;
+        }
+    }
+
+    // BLT rs1, rs2, label, signed comparison
+    if (instruction.func3 == 0x4) {
+        if (rs1Signed < rs2Signed) {
+            pc = pc + instruction.immediate;
+        }
+    }
+
+    // BGE rs1, rs2, label, signed comparison
+    if (instruction.func3 == 0x5) {
+        if (rs1Signed >= rs2Signed) {
+            pc = pc + instruction.immediate;
+        }
+    }
+
+    // BLTU rs1, rs2, label, unsigned comparison
+    if (instruction.func3 == 0x6) {
+        if (rs1Value < rs2Value) {
+            pc = pc + instruction.immediate;
+        }
+    }
+
+    // BGEU rs1, rs2, label, unsigned comparison
+    if (instruction.func3 == 0x7) {
+        if (rs1Value >= rs2Value) {
             pc = pc + instruction.immediate;
         }
     }

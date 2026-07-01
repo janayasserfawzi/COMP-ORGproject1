@@ -69,7 +69,6 @@ void testRegisterFile() {
     assert(registers.getRegister(6) == 0x7777);
     assert(registers.getRegister(7) == 0x8888);
 
-    // x0 is normal in ZX16, not hardwired to zero
     registers.setRegister(0, 0xABCD);
     assert(registers.getRegister(0) == 0xABCD);
 
@@ -112,7 +111,6 @@ void createLoaderTestFile(const char filename[]) {
 
     assert(file != 0);
 
-    // Fake .bin bytes for testing
     unsigned char data[6] = {
         0x12, 0x34, 0xAB, 0xCD, 0x00, 0xFF
     };
@@ -139,12 +137,10 @@ void testProgramLoader() {
 
     assert(bytesLoaded == 6);
 
-    // Program must be loaded starting at 0x0020
     for (int i = 0; i < 6; i++) {
         assert(memory.read8(0x0020 + i) == expected[i]);
     }
 
-    // Make sure bytes before and after were not changed
     assert(memory.read8(0x001F) == 0x00);
     assert(memory.read8(0x0026) == 0x00);
 
@@ -744,7 +740,6 @@ void testBeqBneExecution() {
 
     unsigned short word;
 
-    // BEQ taken: x3 == x4, branch +4
     cpu.getRegisters().setRegister(3, 5);
     cpu.getRegisters().setRegister(4, 5);
 
@@ -755,7 +750,6 @@ void testBeqBneExecution() {
 
     assert(cpu.getPC() == 0x0026);
 
-    // BEQ not taken: x3 != x4
     cpu.setPC(0x0100);
     cpu.getRegisters().setRegister(3, 5);
     cpu.getRegisters().setRegister(4, 7);
@@ -767,7 +761,6 @@ void testBeqBneExecution() {
 
     assert(cpu.getPC() == 0x0102);
 
-    // BNE taken: x1 != x2, branch +6
     cpu.setPC(0x0200);
     cpu.getRegisters().setRegister(1, 10);
     cpu.getRegisters().setRegister(2, 20);
@@ -779,7 +772,6 @@ void testBeqBneExecution() {
 
     assert(cpu.getPC() == 0x0208);
 
-    // BNE not taken: x1 == x2
     cpu.setPC(0x0300);
     cpu.getRegisters().setRegister(1, 9);
     cpu.getRegisters().setRegister(2, 9);
@@ -792,6 +784,142 @@ void testBeqBneExecution() {
     assert(cpu.getPC() == 0x0302);
 
     printf("[PASS] BEQ/BNE branch test passed\n");
+}
+
+void testRemainingBranchesExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    cpu.setPC(0x1000);
+    cpu.getRegisters().setRegister(3, 0);
+
+    word = (7 << 12) | (0 << 9) | (3 << 6) | (2 << 3) | 2;
+    cpu.getMemory().write16(0x1000, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1010);
+
+    cpu.setPC(0x1100);
+    cpu.getRegisters().setRegister(3, 5);
+
+    word = (7 << 12) | (0 << 9) | (3 << 6) | (2 << 3) | 2;
+    cpu.getMemory().write16(0x1100, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1102);
+
+    cpu.setPC(0x1200);
+    cpu.getRegisters().setRegister(4, 9);
+
+    word = (8 << 12) | (0 << 9) | (4 << 6) | (3 << 3) | 2;
+    cpu.getMemory().write16(0x1200, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x11F2);
+
+    cpu.setPC(0x1300);
+    cpu.getRegisters().setRegister(4, 0);
+
+    word = (8 << 12) | (0 << 9) | (4 << 6) | (3 << 3) | 2;
+    cpu.getMemory().write16(0x1300, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1302);
+
+    cpu.setPC(0x1400);
+    cpu.getRegisters().setRegister(1, 0xFFFF);
+    cpu.getRegisters().setRegister(2, 1);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (4 << 3) | 2;
+    cpu.getMemory().write16(0x1400, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1406);
+
+    cpu.setPC(0x1500);
+    cpu.getRegisters().setRegister(1, 5);
+    cpu.getRegisters().setRegister(2, 0xFFFF);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (4 << 3) | 2;
+    cpu.getMemory().write16(0x1500, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1502);
+
+    cpu.setPC(0x1600);
+    cpu.getRegisters().setRegister(1, 5);
+    cpu.getRegisters().setRegister(2, 0xFFFF);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (5 << 3) | 2;
+    cpu.getMemory().write16(0x1600, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1606);
+
+    cpu.setPC(0x1700);
+    cpu.getRegisters().setRegister(1, 0xFFFE);
+    cpu.getRegisters().setRegister(2, 3);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (5 << 3) | 2;
+    cpu.getMemory().write16(0x1700, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1702);
+
+    cpu.setPC(0x1800);
+    cpu.getRegisters().setRegister(1, 1);
+    cpu.getRegisters().setRegister(2, 0xFFFF);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (6 << 3) | 2;
+    cpu.getMemory().write16(0x1800, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1806);
+
+    cpu.setPC(0x1900);
+    cpu.getRegisters().setRegister(1, 0xFFFF);
+    cpu.getRegisters().setRegister(2, 1);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (6 << 3) | 2;
+    cpu.getMemory().write16(0x1900, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1902);
+
+    cpu.setPC(0x1A00);
+    cpu.getRegisters().setRegister(1, 0xFFFF);
+    cpu.getRegisters().setRegister(2, 1);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (7 << 3) | 2;
+    cpu.getMemory().write16(0x1A00, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1A06);
+
+    cpu.setPC(0x1B00);
+    cpu.getRegisters().setRegister(1, 1);
+    cpu.getRegisters().setRegister(2, 0xFFFF);
+
+    word = (2 << 12) | (2 << 9) | (1 << 6) | (7 << 3) | 2;
+    cpu.getMemory().write16(0x1B00, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1B02);
+
+    printf("[PASS] Remaining branches test passed\n");
 }
 
 int main() {
@@ -813,6 +941,7 @@ int main() {
     testWordLoadExecution();
     testStoreExecution();
     testBeqBneExecution();
+    testRemainingBranchesExecution();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -833,6 +962,7 @@ int main() {
         DrawText("Instruction fields: PASSED", 10, 114, 9, GREEN);
         DrawText("Dispatcher: PASSED", 10, 128, 9, GREEN);
         DrawText("BEQ/BNE: PASSED", 10, 142, 9, GREEN);
+        DrawText("Remaining branches: PASSED", 10, 156, 9, GREEN);
 
         DrawText("ADD/SUB: PASSED", 165, 30, 9, GREEN);
         DrawText("Logical ops: PASSED", 165, 44, 9, GREEN);
