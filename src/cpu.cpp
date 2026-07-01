@@ -28,6 +28,14 @@ void CPU::setSP(unsigned short value) {
     registers.setRegister(2, value);  // x2 = sp
 }
 
+unsigned short CPU::fetch() {
+    unsigned short instruction = memory.read16(pc); // Read instruction at PC
+
+    pc = pc + 2;                                    // 16-bit instruction = 2 bytes
+
+    return instruction;
+}
+
 Memory& CPU::getMemory() {
     return memory;
 }

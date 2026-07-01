@@ -19,6 +19,9 @@ public:
     unsigned short getSP();
     void setSP(unsigned short value);
 
+    // Read 16-bit instruction from memory at PC, then move PC by 2
+    unsigned short fetch();
+
     // Access CPU memory and registers without pointers
     Memory& getMemory();
     RegisterFile& getRegisters();

@@ -152,11 +152,41 @@ void testProgramLoader() {
     printf("[PASS] Program loader test passed\n");
 }
 
+void testFetch() {
+    CPU cpu;
+
+    // CPU starts fetching from PC = 0x0020
+    assert(cpu.getPC() == 0x0020);
+
+    // Put fake 16-bit instruction in RAM at PC
+    cpu.getMemory().write16(0x0020, 0xABCD);
+
+    // Fetch should read the instruction from RAM
+    unsigned short instruction = cpu.fetch();
+
+    assert(instruction == 0xABCD);
+
+    // Fetch should move PC to the next instruction
+    assert(cpu.getPC() == 0x0022);
+
+    // Test another instruction using raw bytes
+    cpu.getMemory().write8(0x0022, 0x34);
+    cpu.getMemory().write8(0x0023, 0x12);
+
+    instruction = cpu.fetch();
+
+    assert(instruction == 0x1234);
+    assert(cpu.getPC() == 0x0024);
+
+    printf("[PASS] Fetch test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
     testCPUReset();
     testProgramLoader();
+    testFetch();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -166,11 +196,12 @@ int main() {
 
         ClearBackground(BLACK);
 
-        DrawText("ZX16 Simulator", 90, 50, 20, RAYWHITE);
-        DrawText("Memory read/write test: PASSED", 45, 90, 16, GREEN);
-        DrawText("Register file test: PASSED", 55, 115, 16, GREEN);
-        DrawText("CPU reset test: PASSED", 70, 140, 16, GREEN);
-        DrawText("Program loader test: PASSED", 55, 165, 16, GREEN);
+        DrawText("ZX16 Simulator", 90, 35, 20, RAYWHITE);
+        DrawText("Memory read/write test: PASSED", 45, 75, 16, GREEN);
+        DrawText("Register file test: PASSED", 55, 100, 16, GREEN);
+        DrawText("CPU reset test: PASSED", 70, 125, 16, GREEN);
+        DrawText("Program loader test: PASSED", 55, 150, 16, GREEN);
+        DrawText("Fetch test: PASSED", 90, 175, 16, GREEN);
 
         EndDrawing();
     }
