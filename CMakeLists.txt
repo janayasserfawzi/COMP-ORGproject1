@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(raylib)
 add_executable(zx16sim
         src/main.cpp
         src/memory.cpp
-        src/memory.cpp
+        src/register_file.cpp
 )
 
 target_link_libraries(zx16sim PRIVATE raylib)
