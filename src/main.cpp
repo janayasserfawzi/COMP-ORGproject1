@@ -306,6 +306,56 @@ void testInstructionFields() {
     printf("[PASS] Instruction fields test passed\n");
 }
 
+void testExecutionDispatcher() {
+    CPU cpu;
+
+    // One fake instruction for each opcode/format
+    cpu.getMemory().write16(0x0020, 0x0000); // opcode 000 -> R-Type
+    cpu.getMemory().write16(0x0022, 0x0001); // opcode 001 -> I-Type
+    cpu.getMemory().write16(0x0024, 0x0002); // opcode 010 -> B-Type
+    cpu.getMemory().write16(0x0026, 0x0003); // opcode 011 -> S-Type
+    cpu.getMemory().write16(0x0028, 0x0004); // opcode 100 -> L-Type
+    cpu.getMemory().write16(0x002A, 0x0005); // opcode 101 -> J-Type
+    cpu.getMemory().write16(0x002C, 0x0006); // opcode 110 -> U-Type
+    cpu.getMemory().write16(0x002E, 0x0007); // opcode 111 -> SYS-Type
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0000);
+    assert(cpu.getLastHandler() == ZX16::R_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0001);
+    assert(cpu.getLastHandler() == ZX16::I_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0002);
+    assert(cpu.getLastHandler() == ZX16::B_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0003);
+    assert(cpu.getLastHandler() == ZX16::S_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0004);
+    assert(cpu.getLastHandler() == ZX16::L_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0005);
+    assert(cpu.getLastHandler() == ZX16::J_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0006);
+    assert(cpu.getLastHandler() == ZX16::U_TYPE);
+
+    cpu.step();
+    assert(cpu.getLastInstruction() == 0x0007);
+    assert(cpu.getLastHandler() == ZX16::SYS_TYPE);
+
+    assert(cpu.getPC() == 0x0030);
+
+    printf("[PASS] Execution dispatcher test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -314,6 +364,7 @@ int main() {
     testFetch();
     testSequentialPC();
     testInstructionFields();
+    testExecutionDispatcher();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -323,14 +374,15 @@ int main() {
 
         ClearBackground(BLACK);
 
-        DrawText("ZX16 Simulator", 90, 15, 20, RAYWHITE);
-        DrawText("Memory read/write test: PASSED", 45, 45, 16, GREEN);
-        DrawText("Register file test: PASSED", 55, 70, 16, GREEN);
-        DrawText("CPU reset test: PASSED", 70, 95, 16, GREEN);
-        DrawText("Program loader test: PASSED", 55, 120, 16, GREEN);
-        DrawText("Fetch test: PASSED", 90, 145, 16, GREEN);
-        DrawText("Sequential PC test: PASSED", 65, 170, 16, GREEN);
-        DrawText("Instruction fields test: PASSED", 45, 195, 16, GREEN);
+        DrawText("ZX16 Simulator", 90, 5, 20, RAYWHITE);
+        DrawText("Memory read/write test: PASSED", 45, 35, 16, GREEN);
+        DrawText("Register file test: PASSED", 55, 60, 16, GREEN);
+        DrawText("CPU reset test: PASSED", 70, 85, 16, GREEN);
+        DrawText("Program loader test: PASSED", 55, 110, 16, GREEN);
+        DrawText("Fetch test: PASSED", 90, 135, 16, GREEN);
+        DrawText("Sequential PC test: PASSED", 65, 160, 16, GREEN);
+        DrawText("Instruction fields test: PASSED", 45, 185, 16, GREEN);
+        DrawText("Execution dispatcher test: PASSED", 35, 210, 16, GREEN);
 
         EndDrawing();
     }
