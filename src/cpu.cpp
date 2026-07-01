@@ -223,6 +223,20 @@ void CPU::handleBType(DecodedInstruction instruction) {
 
 void CPU::handleSType(DecodedInstruction instruction) {
     lastHandler = ZX16::S_TYPE;      // S-Type handler called
+
+    unsigned short baseAddress = registers.getRegister(instruction.rs1);
+    unsigned short address = baseAddress + instruction.immediate;
+    unsigned short rs2Value = registers.getRegister(instruction.rs2);
+
+    // SB rs2, offset(rs1): store low byte of rs2
+    if (instruction.func3 == 0x0) {
+        memory.write8(address, rs2Value & 0x00FF);
+    }
+
+    // SW rs2, offset(rs1): store full 16-bit word of rs2
+    if (instruction.func3 == 0x1) {
+        memory.write16(address, rs2Value);
+    }
 }
 
 void CPU::handleLType(DecodedInstruction instruction) {

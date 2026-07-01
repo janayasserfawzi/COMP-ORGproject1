@@ -190,18 +190,15 @@ void testSequentialPC() {
     cpu.getMemory().write16(0x0022, 0x2222);
     cpu.getMemory().write16(0x0024, 0x3333);
 
-    // First step
     assert(cpu.getPC() == 0x0020);
     assert(cpu.step() == 0x1111);
     assert(cpu.getLastInstruction() == 0x1111);
     assert(cpu.getPC() == 0x0022);
 
-    // Second step
     assert(cpu.step() == 0x2222);
     assert(cpu.getLastInstruction() == 0x2222);
     assert(cpu.getPC() == 0x0024);
 
-    // Third step
     assert(cpu.step() == 0x3333);
     assert(cpu.getLastInstruction() == 0x3333);
     assert(cpu.getPC() == 0x0026);
@@ -309,7 +306,6 @@ void testInstructionFields() {
 void testExecutionDispatcher() {
     CPU cpu;
 
-    // One fake instruction for each opcode/format
     cpu.getMemory().write16(0x0020, 0x0000);
     cpu.getMemory().write16(0x0022, 0x0001);
     cpu.getMemory().write16(0x0024, 0x0002);
@@ -741,6 +737,69 @@ void testWordLoadExecution() {
     printf("[PASS] Word load test passed\n");
 }
 
+void testStoreExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    cpu.getRegisters().setRegister(3, 0x3000);
+
+    // SB x4, 0(x3)
+    // Only low byte of x4 should be stored
+    cpu.getRegisters().setRegister(4, 0xABCD);
+
+    word = (0 << 12) | (4 << 9) | (3 << 6) | (0 << 3) | 3;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getMemory().read8(0x3000) == 0xCD);
+    assert(cpu.getPC() == 0x0022);
+
+    // SW x5, 2(x3)
+    // Full 16-bit word should be stored little-endian
+    cpu.getRegisters().setRegister(5, 0x1234);
+
+    word = (2 << 12) | (5 << 9) | (3 << 6) | (1 << 3) | 3;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getMemory().read16(0x3002) == 0x1234);
+    assert(cpu.getMemory().read8(0x3002) == 0x34);
+    assert(cpu.getMemory().read8(0x3003) == 0x12);
+    assert(cpu.getPC() == 0x0024);
+
+    // SB x7, -1(x6)
+    // Negative offset should store at base - 1
+    cpu.getRegisters().setRegister(6, 0x3010);
+    cpu.getRegisters().setRegister(7, 0x00EE);
+
+    word = (0xF << 12) | (7 << 9) | (6 << 6) | (0 << 3) | 3;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getMemory().read8(0x300F) == 0xEE);
+    assert(cpu.getPC() == 0x0026);
+
+    // SW x1, -2(x6)
+    // Negative even offset should store a word at base - 2
+    cpu.getRegisters().setRegister(1, 0xBEEF);
+
+    word = (0xE << 12) | (1 << 9) | (6 << 6) | (1 << 3) | 3;
+    cpu.getMemory().write16(0x0026, word);
+
+    cpu.step();
+
+    assert(cpu.getMemory().read16(0x300E) == 0xBEEF);
+    assert(cpu.getMemory().read8(0x300E) == 0xEF);
+    assert(cpu.getMemory().read8(0x300F) == 0xBE);
+    assert(cpu.getPC() == 0x0028);
+
+    printf("[PASS] Store test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -758,6 +817,7 @@ int main() {
     testLiExecution();
     testByteLoadExecution();
     testWordLoadExecution();
+    testStoreExecution();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -786,6 +846,7 @@ int main() {
         DrawText("LI: PASSED", 165, 100, 9, GREEN);
         DrawText("Byte load: PASSED", 165, 114, 9, GREEN);
         DrawText("Word load: PASSED", 165, 128, 9, GREEN);
+        DrawText("Store: PASSED", 165, 142, 9, GREEN);
 
         EndDrawing();
     }
