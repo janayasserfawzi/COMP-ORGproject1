@@ -3,6 +3,7 @@
 #include "register_file.h"
 #include "cpu.h"
 #include "program_loader.h"
+#include "instruction_decoder.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -208,6 +209,67 @@ void testSequentialPC() {
     printf("[PASS] Sequential PC test passed\n");
 }
 
+void testInstructionDecoder() {
+    InstructionDecoder decoder;
+    DecodedInstruction decoded;
+
+    // Opcode 000 -> R-Type
+    decoded = decoder.decode(0x0000);
+    assert(decoded.word == 0x0000);
+    assert(decoded.opcode == 0);
+    assert(decoded.format == ZX16::R_TYPE);
+
+    // Opcode 001 -> I-Type
+    decoded = decoder.decode(0x0001);
+    assert(decoded.word == 0x0001);
+    assert(decoded.opcode == 1);
+    assert(decoded.format == ZX16::I_TYPE);
+
+    // Opcode 010 -> B-Type
+    decoded = decoder.decode(0x0002);
+    assert(decoded.word == 0x0002);
+    assert(decoded.opcode == 2);
+    assert(decoded.format == ZX16::B_TYPE);
+
+    // Opcode 011 -> S-Type
+    decoded = decoder.decode(0x0003);
+    assert(decoded.word == 0x0003);
+    assert(decoded.opcode == 3);
+    assert(decoded.format == ZX16::S_TYPE);
+
+    // Opcode 100 -> L-Type
+    decoded = decoder.decode(0x0004);
+    assert(decoded.word == 0x0004);
+    assert(decoded.opcode == 4);
+    assert(decoded.format == ZX16::L_TYPE);
+
+    // Opcode 101 -> J-Type
+    decoded = decoder.decode(0x0005);
+    assert(decoded.word == 0x0005);
+    assert(decoded.opcode == 5);
+    assert(decoded.format == ZX16::J_TYPE);
+
+    // Opcode 110 -> U-Type
+    decoded = decoder.decode(0x0006);
+    assert(decoded.word == 0x0006);
+    assert(decoded.opcode == 6);
+    assert(decoded.format == ZX16::U_TYPE);
+
+    // Opcode 111 -> SYS-Type
+    decoded = decoder.decode(0x0007);
+    assert(decoded.word == 0x0007);
+    assert(decoded.opcode == 7);
+    assert(decoded.format == ZX16::SYS_TYPE);
+
+    // Check opcode extraction from a bigger machine code
+    decoded = decoder.decode(0xABCD);
+    assert(decoded.word == 0xABCD);
+    assert(decoded.opcode == 5);
+    assert(decoded.format == ZX16::J_TYPE);
+
+    printf("[PASS] Instruction decoder test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -215,6 +277,7 @@ int main() {
     testProgramLoader();
     testFetch();
     testSequentialPC();
+    testInstructionDecoder();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -224,13 +287,14 @@ int main() {
 
         ClearBackground(BLACK);
 
-        DrawText("ZX16 Simulator", 90, 25, 20, RAYWHITE);
-        DrawText("Memory read/write test: PASSED", 45, 60, 16, GREEN);
-        DrawText("Register file test: PASSED", 55, 85, 16, GREEN);
-        DrawText("CPU reset test: PASSED", 70, 110, 16, GREEN);
-        DrawText("Program loader test: PASSED", 55, 135, 16, GREEN);
-        DrawText("Fetch test: PASSED", 90, 160, 16, GREEN);
-        DrawText("Sequential PC test: PASSED", 65, 185, 16, GREEN);
+        DrawText("ZX16 Simulator", 90, 15, 20, RAYWHITE);
+        DrawText("Memory read/write test: PASSED", 45, 45, 16, GREEN);
+        DrawText("Register file test: PASSED", 55, 70, 16, GREEN);
+        DrawText("CPU reset test: PASSED", 70, 95, 16, GREEN);
+        DrawText("Program loader test: PASSED", 55, 120, 16, GREEN);
+        DrawText("Fetch test: PASSED", 90, 145, 16, GREEN);
+        DrawText("Sequential PC test: PASSED", 65, 170, 16, GREEN);
+        DrawText("Instruction decoder test: PASSED", 45, 195, 16, GREEN);
 
         EndDrawing();
     }
