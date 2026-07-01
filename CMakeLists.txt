@@ -24,6 +24,7 @@ add_executable(zx16sim
         src/main.cpp
         src/memory.cpp
         src/register_file.cpp
+        src/cpu.cpp
 )
 
 target_link_libraries(zx16sim PRIVATE raylib)

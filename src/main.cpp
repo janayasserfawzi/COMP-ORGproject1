@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "memory.h"
 #include "register_file.h"
+#include "cpu.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -66,7 +67,6 @@ void testRegisterFile() {
     assert(registers.getRegister(6) == 0x7777);
     assert(registers.getRegister(7) == 0x8888);
 
-    // x0 is normal in ZX16, not hardwired to zero
     registers.setRegister(0, 0xABCD);
     assert(registers.getRegister(0) == 0xABCD);
 
@@ -84,9 +84,30 @@ void testRegisterFile() {
     printf("[PASS] Register file tests passed\n");
 }
 
+void testCPUReset() {
+    CPU cpu;
+
+    assert(cpu.getPC() == 0x0020);
+    assert(cpu.getSP() == 0xEFFE);
+
+    cpu.setPC(0x1234);
+    cpu.setSP(0xABCD);
+
+    assert(cpu.getPC() == 0x1234);
+    assert(cpu.getSP() == 0xABCD);
+
+    cpu.reset();
+
+    assert(cpu.getPC() == 0x0020);
+    assert(cpu.getSP() == 0xEFFE);
+
+    printf("[PASS] CPU reset test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
+    testCPUReset();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -96,9 +117,10 @@ int main() {
 
         ClearBackground(BLACK);
 
-        DrawText("ZX16 Simulator", 90, 80, 20, RAYWHITE);
-        DrawText("Memory read/write test: PASSED", 45, 115, 16, GREEN);
-        DrawText("Register file test: PASSED", 55, 140, 16, GREEN);
+        DrawText("ZX16 Simulator", 90, 65, 20, RAYWHITE);
+        DrawText("Memory read/write test: PASSED", 45, 105, 16, GREEN);
+        DrawText("Register file test: PASSED", 55, 130, 16, GREEN);
+        DrawText("CPU reset test: PASSED", 70, 155, 16, GREEN);
 
         EndDrawing();
     }
