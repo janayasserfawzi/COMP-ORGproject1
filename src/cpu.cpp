@@ -68,41 +68,41 @@ RegisterFile& CPU::getRegisters() {
 void CPU::dispatch(DecodedInstruction instruction) {
     // Opcode is bits [2:0]
     switch (instruction.opcode) {
-        case 0:
-            handleRType(instruction);
-            break;
+    case 0:
+        handleRType(instruction);
+        break;
 
-        case 1:
-            handleIType(instruction);
-            break;
+    case 1:
+        handleIType(instruction);
+        break;
 
-        case 2:
-            handleBType(instruction);
-            break;
+    case 2:
+        handleBType(instruction);
+        break;
 
-        case 3:
-            handleSType(instruction);
-            break;
+    case 3:
+        handleSType(instruction);
+        break;
 
-        case 4:
-            handleLType(instruction);
-            break;
+    case 4:
+        handleLType(instruction);
+        break;
 
-        case 5:
-            handleJType(instruction);
-            break;
+    case 5:
+        handleJType(instruction);
+        break;
 
-        case 6:
-            handleUType(instruction);
-            break;
+    case 6:
+        handleUType(instruction);
+        break;
 
-        case 7:
-            handleSysType(instruction);
-            break;
+    case 7:
+        handleSysType(instruction);
+        break;
 
-        default:
-            lastHandler = -1;
-            break;
+    default:
+        lastHandler = -1;
+        break;
     }
 }
 
@@ -111,20 +111,110 @@ void CPU::handleRType(DecodedInstruction instruction) {
 
     unsigned short rdValue = registers.getRegister(instruction.rd);
     unsigned short rs2Value = registers.getRegister(instruction.rs2);
+    unsigned short result = 0;
 
     // ADD rd, rs2: rd = rd + rs2
     if (instruction.funct4 == 0x0) {
-        registers.setRegister(instruction.rd, rdValue + rs2Value);
+        result = rdValue + rs2Value;
+        registers.setRegister(instruction.rd, result);
     }
 
     // SUB rd, rs2: rd = rd - rs2
     if (instruction.funct4 == 0x1) {
-        registers.setRegister(instruction.rd, rdValue - rs2Value);
+        result = rdValue - rs2Value;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // SLL rd, rs2: rd = rd << (rs2 & 15)
+    if (instruction.funct4 == 0x4) {
+        int amount = rs2Value & 15;
+        result = rdValue << amount;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // SRL rd, rs2: rd = rd >> (rs2 & 15), logical
+    if (instruction.funct4 == 0x5) {
+        int amount = rs2Value & 15;
+        result = rdValue >> amount;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // SRA rd, rs2: rd = rd >> (rs2 & 15), arithmetic
+    if (instruction.funct4 == 0x6) {
+        int amount = rs2Value & 15;
+
+        if (amount == 0) {
+            result = rdValue;
+        }
+        else {
+            unsigned int temp = rdValue >> amount;
+
+            // If sign bit is 1, fill upper bits with 1s
+            if ((rdValue & 0x8000) != 0) {
+                unsigned int mask = 0xFFFF << (16 - amount);
+                temp = temp | mask;
+            }
+
+            result = temp;
+        }
+
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // OR rd, rs2: rd = rd | rs2
+    if (instruction.funct4 == 0x7) {
+        result = rdValue | rs2Value;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // AND rd, rs2: rd = rd & rs2
+    if (instruction.funct4 == 0x8) {
+        result = rdValue & rs2Value;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // XOR rd, rs2: rd = rd ^ rs2
+    if (instruction.funct4 == 0x9) {
+        result = rdValue ^ rs2Value;
+        registers.setRegister(instruction.rd, result);
     }
 }
 
 void CPU::handleIType(DecodedInstruction instruction) {
     lastHandler = ZX16::I_TYPE;      // I-Type handler called
+
+    unsigned short rdValue = registers.getRegister(instruction.rd);
+    unsigned short result = 0;
+
+    // ADDI rd, imm: rd = rd + signed imm7
+    if (instruction.func3 == 0x0) {
+        result = rdValue + instruction.immediate;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // ORI rd, imm: rd = rd | zero-extended 7-bit mask
+    if (instruction.func3 == 0x4) {
+        unsigned short immMask = (instruction.word >> 9) & 0x007F;
+        result = rdValue | immMask;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // ANDI rd, imm: rd = rd & signed imm7
+    if (instruction.func3 == 0x5) {
+        result = rdValue & (unsigned short)instruction.immediate;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // XORI rd, imm: rd = rd ^ signed imm7
+    if (instruction.func3 == 0x6) {
+        result = rdValue ^ (unsigned short)instruction.immediate;
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // LI rd, imm: rd = signed imm7
+    if (instruction.func3 == 0x7) {
+        registers.setRegister(instruction.rd, (unsigned short)instruction.immediate);
+    }
 }
 
 void CPU::handleBType(DecodedInstruction instruction) {
@@ -137,6 +227,36 @@ void CPU::handleSType(DecodedInstruction instruction) {
 
 void CPU::handleLType(DecodedInstruction instruction) {
     lastHandler = ZX16::L_TYPE;      // L-Type handler called
+
+    unsigned short baseAddress = registers.getRegister(instruction.rs1);
+    unsigned short address = baseAddress + instruction.immediate;
+    unsigned short result = 0;
+
+    // LB rd, offset(rs): load byte and sign-extend
+    if (instruction.func3 == 0x0) {
+        unsigned char byteValue = memory.read8(address);
+
+        if ((byteValue & 0x80) != 0) {
+            result = 0xFF00 | byteValue;
+        }
+        else {
+            result = byteValue;
+        }
+
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // LW rd, offset(rs): load 16-bit word
+    if (instruction.func3 == 0x1) {
+        result = memory.read16(address);
+        registers.setRegister(instruction.rd, result);
+    }
+
+    // LBU rd, offset(rs): load byte and zero-extend
+    if (instruction.func3 == 0x4) {
+        result = memory.read8(address);
+        registers.setRegister(instruction.rd, result);
+    }
 }
 
 void CPU::handleJType(DecodedInstruction instruction) {

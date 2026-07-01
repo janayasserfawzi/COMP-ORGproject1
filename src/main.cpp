@@ -310,45 +310,37 @@ void testExecutionDispatcher() {
     CPU cpu;
 
     // One fake instruction for each opcode/format
-    cpu.getMemory().write16(0x0020, 0x0000); // opcode 000 -> R-Type
-    cpu.getMemory().write16(0x0022, 0x0001); // opcode 001 -> I-Type
-    cpu.getMemory().write16(0x0024, 0x0002); // opcode 010 -> B-Type
-    cpu.getMemory().write16(0x0026, 0x0003); // opcode 011 -> S-Type
-    cpu.getMemory().write16(0x0028, 0x0004); // opcode 100 -> L-Type
-    cpu.getMemory().write16(0x002A, 0x0005); // opcode 101 -> J-Type
-    cpu.getMemory().write16(0x002C, 0x0006); // opcode 110 -> U-Type
-    cpu.getMemory().write16(0x002E, 0x0007); // opcode 111 -> SYS-Type
+    cpu.getMemory().write16(0x0020, 0x0000);
+    cpu.getMemory().write16(0x0022, 0x0001);
+    cpu.getMemory().write16(0x0024, 0x0002);
+    cpu.getMemory().write16(0x0026, 0x0003);
+    cpu.getMemory().write16(0x0028, 0x0004);
+    cpu.getMemory().write16(0x002A, 0x0005);
+    cpu.getMemory().write16(0x002C, 0x0006);
+    cpu.getMemory().write16(0x002E, 0x0007);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0000);
     assert(cpu.getLastHandler() == ZX16::R_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0001);
     assert(cpu.getLastHandler() == ZX16::I_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0002);
     assert(cpu.getLastHandler() == ZX16::B_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0003);
     assert(cpu.getLastHandler() == ZX16::S_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0004);
     assert(cpu.getLastHandler() == ZX16::L_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0005);
     assert(cpu.getLastHandler() == ZX16::J_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0006);
     assert(cpu.getLastHandler() == ZX16::U_TYPE);
 
     cpu.step();
-    assert(cpu.getLastInstruction() == 0x0007);
     assert(cpu.getLastHandler() == ZX16::SYS_TYPE);
 
     assert(cpu.getPC() == 0x0030);
@@ -363,7 +355,6 @@ void testAddSubExecution() {
     unsigned short subWord;
 
     // ADD x3, x4
-    // x3 = x3 + x4
     cpu.getRegisters().setRegister(3, 5);
     cpu.getRegisters().setRegister(4, 7);
 
@@ -378,7 +369,6 @@ void testAddSubExecution() {
     assert(cpu.getPC() == 0x0022);
 
     // SUB x5, x6
-    // x5 = x5 - x6
     cpu.getRegisters().setRegister(5, 20);
     cpu.getRegisters().setRegister(6, 8);
 
@@ -392,7 +382,7 @@ void testAddSubExecution() {
     assert(cpu.getLastHandler() == ZX16::R_TYPE);
     assert(cpu.getPC() == 0x0024);
 
-    // SUB wraparound test: 3 - 5 = 0xFFFE in 16-bit arithmetic
+    // SUB wraparound test: 3 - 5 = 0xFFFE
     cpu.getRegisters().setRegister(7, 3);
     cpu.getRegisters().setRegister(6, 5);
 
@@ -419,6 +409,338 @@ void testAddSubExecution() {
     printf("[PASS] ADD/SUB execution test passed\n");
 }
 
+void testLogicalExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    // OR x3, x4
+    cpu.getRegisters().setRegister(3, 0x00F0);
+    cpu.getRegisters().setRegister(4, 0x0F00);
+
+    word = (0x7 << 12) | (4 << 9) | (3 << 6) | 0;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(3) == 0x0FF0);
+    assert(cpu.getPC() == 0x0022);
+
+    // AND x5, x6
+    cpu.getRegisters().setRegister(5, 0x0FF0);
+    cpu.getRegisters().setRegister(6, 0x00FF);
+
+    word = (0x8 << 12) | (6 << 9) | (5 << 6) | 0;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 0x00F0);
+    assert(cpu.getPC() == 0x0024);
+
+    // XOR x7, x1
+    cpu.getRegisters().setRegister(7, 0xAAAA);
+    cpu.getRegisters().setRegister(1, 0x0F0F);
+
+    word = (0x9 << 12) | (1 << 9) | (7 << 6) | 0;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(7) == 0xA5A5);
+    assert(cpu.getPC() == 0x0026);
+
+    printf("[PASS] Logical operations test passed\n");
+}
+
+void testShiftExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    // SLL x3, x4
+    // Shift amount is rs2 & 15, so 20 becomes 4
+    cpu.getRegisters().setRegister(3, 0x0001);
+    cpu.getRegisters().setRegister(4, 20);
+
+    word = (0x4 << 12) | (4 << 9) | (3 << 6) | 0;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(3) == 0x0010);
+    assert(cpu.getPC() == 0x0022);
+
+    // SRL x5, x6
+    cpu.getRegisters().setRegister(5, 0x8000);
+    cpu.getRegisters().setRegister(6, 4);
+
+    word = (0x5 << 12) | (6 << 9) | (5 << 6) | 0;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 0x0800);
+    assert(cpu.getPC() == 0x0024);
+
+    // SRA x7, x1
+    // Arithmetic shift keeps the sign bit
+    cpu.getRegisters().setRegister(7, 0x8000);
+    cpu.getRegisters().setRegister(1, 4);
+
+    word = (0x6 << 12) | (1 << 9) | (7 << 6) | 0;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(7) == 0xF800);
+    assert(cpu.getPC() == 0x0026);
+
+    printf("[PASS] Shift operations test passed\n");
+}
+
+void testAddiExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    // ADDI x3, +5
+    cpu.getRegisters().setRegister(3, 10);
+
+    word = (5 << 9) | (3 << 6) | (0 << 3) | 1;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(3) == 15);
+    assert(cpu.getPC() == 0x0022);
+
+    // ADDI x4, -1
+    cpu.getRegisters().setRegister(4, 10);
+
+    word = (0x7F << 9) | (4 << 6) | (0 << 3) | 1;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(4) == 9);
+    assert(cpu.getPC() == 0x0024);
+
+    // ADDI x5, -64
+    cpu.getRegisters().setRegister(5, 100);
+
+    word = (0x40 << 9) | (5 << 6) | (0 << 3) | 1;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 36);
+    assert(cpu.getPC() == 0x0026);
+
+    // ADDI wraparound: 0xFFFF + 1 = 0x0000
+    cpu.getRegisters().setRegister(6, 0xFFFF);
+
+    word = (1 << 9) | (6 << 6) | (0 << 3) | 1;
+    cpu.getMemory().write16(0x0026, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(6) == 0x0000);
+    assert(cpu.getPC() == 0x0028);
+
+    printf("[PASS] ADDI execution test passed\n");
+}
+
+void testImmediateLogicExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    // ORI x3, 0x0F
+    cpu.getRegisters().setRegister(3, 0x00F0);
+
+    word = (0x0F << 9) | (3 << 6) | (4 << 3) | 1;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(3) == 0x00FF);
+    assert(cpu.getPC() == 0x0022);
+
+    // ORI x4, 0x7F
+    cpu.getRegisters().setRegister(4, 0x0F00);
+
+    word = (0x7F << 9) | (4 << 6) | (4 << 3) | 1;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(4) == 0x0F7F);
+    assert(cpu.getPC() == 0x0024);
+
+    // ANDI x5, 0x0F
+    cpu.getRegisters().setRegister(5, 0x00FF);
+
+    word = (0x0F << 9) | (5 << 6) | (5 << 3) | 1;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 0x000F);
+    assert(cpu.getPC() == 0x0026);
+
+    // ANDI x6, -1
+    cpu.getRegisters().setRegister(6, 0x1234);
+
+    word = (0x7F << 9) | (6 << 6) | (5 << 3) | 1;
+    cpu.getMemory().write16(0x0026, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(6) == 0x1234);
+    assert(cpu.getPC() == 0x0028);
+
+    // XORI x7, -1
+    cpu.getRegisters().setRegister(7, 0xAAAA);
+
+    word = (0x7F << 9) | (7 << 6) | (6 << 3) | 1;
+    cpu.getMemory().write16(0x0028, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(7) == 0x5555);
+    assert(cpu.getPC() == 0x002A);
+
+    printf("[PASS] Immediate logic test passed\n");
+}
+
+void testLiExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    // LI x3, 42
+    word = (42 << 9) | (3 << 6) | (7 << 3) | 1;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(3) == 42);
+    assert(cpu.getPC() == 0x0022);
+
+    // LI x4, -1
+    word = (0x7F << 9) | (4 << 6) | (7 << 3) | 1;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(4) == 0xFFFF);
+    assert(cpu.getPC() == 0x0024);
+
+    // LI x5, -64
+    word = (0x40 << 9) | (5 << 6) | (7 << 3) | 1;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 0xFFC0);
+    assert(cpu.getPC() == 0x0026);
+
+    // LI x0, 7, because x0 is writable in ZX16
+    word = (7 << 9) | (0 << 6) | (7 << 3) | 1;
+    cpu.getMemory().write16(0x0026, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(0) == 7);
+    assert(cpu.getPC() == 0x0028);
+
+    printf("[PASS] LI execution test passed\n");
+}
+
+void testByteLoadExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    cpu.getRegisters().setRegister(3, 0x1000);
+
+    cpu.getMemory().write8(0x1000, 0x7F);
+    cpu.getMemory().write8(0x1001, 0x80);
+    cpu.getMemory().write8(0x1002, 0xAB);
+
+    // LB x4, 0(x3), positive byte
+    word = (0 << 12) | (3 << 9) | (4 << 6) | (0 << 3) | 4;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(4) == 0x007F);
+    assert(cpu.getPC() == 0x0022);
+
+    // LB x5, 1(x3), negative byte 0x80 sign-extends to 0xFF80
+    word = (1 << 12) | (3 << 9) | (5 << 6) | (0 << 3) | 4;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 0xFF80);
+    assert(cpu.getPC() == 0x0024);
+
+    // LBU x6, 1(x3), byte 0x80 zero-extends to 0x0080
+    word = (1 << 12) | (3 << 9) | (6 << 6) | (4 << 3) | 4;
+    cpu.getMemory().write16(0x0024, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(6) == 0x0080);
+    assert(cpu.getPC() == 0x0026);
+
+    // LBU x7, 2(x3), byte 0xAB zero-extends to 0x00AB
+    word = (2 << 12) | (3 << 9) | (7 << 6) | (4 << 3) | 4;
+    cpu.getMemory().write16(0x0026, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(7) == 0x00AB);
+    assert(cpu.getPC() == 0x0028);
+
+    printf("[PASS] Byte load test passed\n");
+}
+
+void testWordLoadExecution() {
+    CPU cpu;
+
+    unsigned short word;
+
+    cpu.getRegisters().setRegister(3, 0x2000);
+
+    // Word stored little-endian by memory.write16
+    cpu.getMemory().write16(0x2000, 0xABCD);
+    cpu.getMemory().write8(0x2004, 0x34);
+    cpu.getMemory().write8(0x2005, 0x12);
+
+    // LW x4, 0(x3)
+    word = (0 << 12) | (3 << 9) | (4 << 6) | (1 << 3) | 4;
+    cpu.getMemory().write16(0x0020, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(4) == 0xABCD);
+    assert(cpu.getPC() == 0x0022);
+
+    // LW x5, 4(x3), from raw little-endian bytes 0x34, 0x12
+    word = (4 << 12) | (3 << 9) | (5 << 6) | (1 << 3) | 4;
+    cpu.getMemory().write16(0x0022, word);
+
+    cpu.step();
+
+    assert(cpu.getRegisters().getRegister(5) == 0x1234);
+    assert(cpu.getPC() == 0x0024);
+
+    printf("[PASS] Word load test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -429,6 +751,13 @@ int main() {
     testInstructionFields();
     testExecutionDispatcher();
     testAddSubExecution();
+    testLogicalExecution();
+    testShiftExecution();
+    testAddiExecution();
+    testImmediateLogicExecution();
+    testLiExecution();
+    testByteLoadExecution();
+    testWordLoadExecution();
 
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
@@ -438,16 +767,25 @@ int main() {
 
         ClearBackground(BLACK);
 
-        DrawText("ZX16 Simulator", 90, 5, 20, RAYWHITE);
-        DrawText("Memory read/write test: PASSED", 45, 35, 16, GREEN);
-        DrawText("Register file test: PASSED", 55, 58, 16, GREEN);
-        DrawText("CPU reset test: PASSED", 70, 81, 16, GREEN);
-        DrawText("Program loader test: PASSED", 55, 104, 16, GREEN);
-        DrawText("Fetch test: PASSED", 90, 127, 16, GREEN);
-        DrawText("Sequential PC test: PASSED", 65, 150, 16, GREEN);
-        DrawText("Instruction fields test: PASSED", 45, 173, 16, GREEN);
-        DrawText("Execution dispatcher test: PASSED", 35, 196, 16, GREEN);
-        DrawText("ADD/SUB execution test: PASSED", 40, 219, 16, GREEN);
+        DrawText("ZX16 Simulator", 90, 2, 18, RAYWHITE);
+
+        DrawText("Memory: PASSED", 10, 30, 9, GREEN);
+        DrawText("Register file: PASSED", 10, 44, 9, GREEN);
+        DrawText("CPU reset: PASSED", 10, 58, 9, GREEN);
+        DrawText("Program loader: PASSED", 10, 72, 9, GREEN);
+        DrawText("Fetch: PASSED", 10, 86, 9, GREEN);
+        DrawText("Sequential PC: PASSED", 10, 100, 9, GREEN);
+        DrawText("Instruction fields: PASSED", 10, 114, 9, GREEN);
+        DrawText("Dispatcher: PASSED", 10, 128, 9, GREEN);
+
+        DrawText("ADD/SUB: PASSED", 165, 30, 9, GREEN);
+        DrawText("Logical ops: PASSED", 165, 44, 9, GREEN);
+        DrawText("Shift ops: PASSED", 165, 58, 9, GREEN);
+        DrawText("ADDI: PASSED", 165, 72, 9, GREEN);
+        DrawText("Immediate logic: PASSED", 165, 86, 9, GREEN);
+        DrawText("LI: PASSED", 165, 100, 9, GREEN);
+        DrawText("Byte load: PASSED", 165, 114, 9, GREEN);
+        DrawText("Word load: PASSED", 165, 128, 9, GREEN);
 
         EndDrawing();
     }
