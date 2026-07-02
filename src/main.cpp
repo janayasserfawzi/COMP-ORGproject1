@@ -1058,6 +1058,47 @@ void testEcallPrintIntExecution() {
     printf("\n[PASS] ECALL print_int test passed\n");
 }
 
+void testEcallPrintCharExecution() {
+    CPU cpu;
+
+    unsigned short word = (0x001 << 6) | 7; // ECALL print_char
+
+    cpu.clearOutput();
+
+    // print_char 'A'
+    cpu.setPC(0x2000);
+    cpu.getRegisters().setRegister(6, 0x0041); // a0 = 'A'
+    cpu.getMemory().write16(0x2000, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x2002);
+    assert(cpu.getLastHandler() == ZX16::SYS_TYPE);
+    assert(strcmp(cpu.getOutput(), "A") == 0);
+
+    // print_char newline
+    cpu.setPC(0x2002);
+    cpu.getRegisters().setRegister(6, 0x000A); // '\n'
+    cpu.getMemory().write16(0x2002, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x2004);
+    assert(strcmp(cpu.getOutput(), "A\n") == 0);
+
+    // print_char should use only low byte: 0x1242 -> 'B'
+    cpu.setPC(0x2004);
+    cpu.getRegisters().setRegister(6, 0x1242);
+    cpu.getMemory().write16(0x2004, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x2006);
+    assert(strcmp(cpu.getOutput(), "A\nB") == 0);
+
+    printf("\n[PASS] ECALL print_char test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -1080,6 +1121,7 @@ int main() {
     testRemainingBranchesExecution();
     testJumpExecution();
     testEcallPrintIntExecution();
+    testEcallPrintCharExecution();
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
 
@@ -1113,6 +1155,7 @@ int main() {
         DrawText("Jump/function call: PASSED", 10, 170, 9, GREEN);
 
         DrawText("ECALL print_int: PASSED", 165, 156, 9, GREEN);
+        DrawText("ECALL print_char: PASSED", 165, 170, 9, GREEN);
         EndDrawing();
     }
 

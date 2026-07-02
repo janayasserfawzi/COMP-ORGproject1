@@ -426,4 +426,15 @@ void CPU::handleSysType(DecodedInstruction instruction) {
         unsigned short a0 = registers.getRegister(6); // a0 = x6
         printSignedDecimal(a0);
     }
+
+     // ECALL 0x001: print_char a0
+    if (instruction.service == 0x001) {
+        unsigned short a0 = registers.getRegister(6); // a0 = x6
+        char c = (char)(a0 & 0x00FF);                 // print only low byte
+
+        appendChar(c);
+
+        // Also show it in CLion terminal for now
+        printf("%c", c);
+    }
 }
