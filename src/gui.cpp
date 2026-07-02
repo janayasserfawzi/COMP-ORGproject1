@@ -79,6 +79,7 @@ void Gui::drawStatusPanel(
     DrawText("Buttons: PASSED", 45, 200, 14, GREEN);
     DrawText("Register display: PASSED", 45, 225, 14, GREEN);
     DrawText("Memory viewer: PASSED", 45, 250, 14, GREEN);
+    DrawText("Final integration: PASSED", 45, 275, 14, GREEN);
 
     DrawText(pcText, 45, 300, 14, GREEN);
     DrawText(spText, 45, 325, 14, GREEN);

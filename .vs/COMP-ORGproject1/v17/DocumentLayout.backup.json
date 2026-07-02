@@ -7,6 +7,10 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\cpu.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\cpu.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\gui.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
@@ -23,10 +27,6 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:.vs\\launch.vs.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\cpu.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\cpu.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|CMake Overview Pages||{B1CAA5B0-FEB1-4350-8AB9-F895876842F2}"
     }
   ],
@@ -41,7 +41,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "launch.vs.json",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\.vs\\launch.vs.json",
               "RelativeDocumentMoniker": ".vs\\launch.vs.json",
@@ -54,20 +54,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "gui.cpp",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.cpp",
               "RelativeDocumentMoniker": "src\\gui.cpp",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.cpp",
               "RelativeToolTip": "src\\gui.cpp",
-              "ViewState": "AgIAAMQAAAAAAAAAAAAQwN8AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAAAFEAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-07-02T08:24:33.914Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T08:24:33.914Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "gui.h",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.h",
               "RelativeDocumentMoniker": "src\\gui.h",
@@ -75,18 +74,17 @@
               "RelativeToolTip": "src\\gui.h",
               "ViewState": "AgIAAB0AAAAAAAAAAAAQwDcAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2026-07-02T08:24:05.532Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T08:24:05.532Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "cpu.cpp",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\cpu.cpp",
               "RelativeDocumentMoniker": "src\\cpu.cpp",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\cpu.cpp",
               "RelativeToolTip": "src\\cpu.cpp",
-              "ViewState": "AgIAAAMBAAAAAAAAAAAQwB0BAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAKgBAAAAAAAAAAAAAB0BAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-07-01T15:40:47.975Z"
             },
@@ -107,14 +105,14 @@
               "RelativeDocumentMoniker": "src\\main.cpp",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\main.cpp",
               "RelativeToolTip": "src\\main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgDAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAALgDAAAAAAAAAAAAAM0DAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-07-01T14:25:02.629Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "CMakeLists.txt",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\CMakeLists.txt",
               "RelativeDocumentMoniker": "CMakeLists.txt",

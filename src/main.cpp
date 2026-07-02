@@ -765,6 +765,215 @@ void testMemoryViewerMatchesRam() {
     printf("[PASS] Memory viewer test passed\n");
 }
 
+void writeWordToBin(FILE* file, unsigned short word) {
+    // ZX16 .bin files are little-endian
+    fputc(word & 0x00FF, file);
+    fputc((word >> 8) & 0x00FF, file);
+}
+
+void createBinProgram(const char filename[], unsigned short program[], int wordCount) {
+    FILE* file = fopen(filename, "wb");
+
+    assert(file != 0);
+
+    for (int i = 0; i < wordCount; i++) {
+        writeWordToBin(file, program[i]);
+    }
+
+    fclose(file);
+}
+
+void runCpuUntilHalt(CPU& cpu, int maxSteps) {
+    int steps = 0;
+
+    while (!cpu.isHalted() && steps < maxSteps) {
+        cpu.step();
+        steps++;
+    }
+
+    assert(cpu.isHalted() == true);
+}
+
+void testFinalBinPrograms() {
+    CPU cpu;
+
+    // ============================================================
+    // Program 1: arithmetic + print_int + print_char
+    //
+    // LI x6, 7
+    // ADDI x6, 5
+    // ECALL print_int
+    // LI x6, '\n'
+    // ECALL print_char
+    // LI x6, -1
+    // ECALL print_int
+    // ECALL halt
+    //
+    // Expected output:
+    // 12
+    // -1
+    // ============================================================
+
+    const char arithmeticBin[] = "final_arithmetic.bin";
+
+    unsigned short arithmeticProgram[] = {
+        makeI(7, 6, 7),        // LI x6, 7
+        makeI(5, 6, 0),        // ADDI x6, 5
+        makeSys(0x000),        // print_int
+        makeI(0x0A, 6, 7),     // LI x6, '\n'
+        makeSys(0x001),        // print_char
+        makeI(0x7F, 6, 7),     // LI x6, -1
+        makeSys(0x000),        // print_int
+        makeSys(0x3FF)         // halt
+    };
+
+    createBinProgram(arithmeticBin, arithmeticProgram, 8);
+
+    cpu.reset();
+    cpu.clearOutput();
+
+    assert(ProgramLoader::loadBin(cpu.getMemory(), arithmeticBin) == 16);
+
+    runCpuUntilHalt(cpu, 50);
+
+    assert(strcmp(cpu.getOutput(), "12\n-1") == 0);
+    assert(cpu.getPC() == 0x0030);
+
+    remove(arithmeticBin);
+
+    // ============================================================
+    // Program 2: memory load/store using stack area
+    //
+    // LI x3, 42
+    // SW x3, -2(sp)
+    // LW x6, -2(sp)
+    // ECALL print_int
+    // LI x6, '\n'
+    // ECALL print_char
+    // LI x4, -1
+    // SB x4, -1(sp)
+    // LB x6, -1(sp)
+    // ECALL print_int
+    // ECALL halt
+    //
+    // Expected output:
+    // 42
+    // -1
+    // ============================================================
+
+    const char memoryBin[] = "final_memory.bin";
+
+    unsigned short memoryProgram[] = {
+        makeI(42, 3, 7),       // LI x3, 42
+        makeS(0xE, 3, 2, 1),   // SW x3, -2(sp)
+        makeL(0xE, 2, 6, 1),   // LW x6, -2(sp)
+        makeSys(0x000),        // print_int
+        makeI(0x0A, 6, 7),     // LI x6, '\n'
+        makeSys(0x001),        // print_char
+        makeI(0x7F, 4, 7),     // LI x4, -1
+        makeS(0xF, 4, 2, 0),   // SB x4, -1(sp)
+        makeL(0xF, 2, 6, 0),   // LB x6, -1(sp)
+        makeSys(0x000),        // print_int
+        makeSys(0x3FF)         // halt
+    };
+
+    createBinProgram(memoryBin, memoryProgram, 11);
+
+    cpu.reset();
+    cpu.clearOutput();
+
+    assert(ProgramLoader::loadBin(cpu.getMemory(), memoryBin) == 22);
+
+    runCpuUntilHalt(cpu, 50);
+
+    assert(strcmp(cpu.getOutput(), "42\n-1") == 0);
+    assert(cpu.getMemory().read8(0xEFFC) == 0x2A);
+    assert(cpu.getMemory().read8(0xEFFD) == 0xFF);
+
+    remove(memoryBin);
+
+    // ============================================================
+    // Program 3: branch test
+    //
+    // LI x6, 0
+    // BZ x6, +2
+    // LI x6, 9       skipped
+    // LI x6, 1
+    // ECALL print_int
+    // ECALL halt
+    //
+    // Expected output:
+    // 1
+    // ============================================================
+
+    const char branchBin[] = "final_branch.bin";
+
+    unsigned short branchProgram[] = {
+        makeI(0, 6, 7),        // LI x6, 0
+        makeB(1, 0, 6, 2),     // BZ x6, +2
+        makeI(9, 6, 7),        // skipped
+        makeI(1, 6, 7),        // LI x6, 1
+        makeSys(0x000),        // print_int
+        makeSys(0x3FF)         // halt
+    };
+
+    createBinProgram(branchBin, branchProgram, 6);
+
+    cpu.reset();
+    cpu.clearOutput();
+
+    assert(ProgramLoader::loadBin(cpu.getMemory(), branchBin) == 12);
+
+    runCpuUntilHalt(cpu, 50);
+
+    assert(strcmp(cpu.getOutput(), "1") == 0);
+    assert(cpu.getPC() == 0x002C);
+
+    remove(branchBin);
+
+    // ============================================================
+    // Program 4: function-call style test
+    //
+    // JAL x1, function
+    // ECALL print_int
+    // ECALL halt
+    // filler
+    // function:
+    // LI x6, 8
+    // JR x1
+    //
+    // Expected output:
+    // 8
+    // ============================================================
+
+    const char jumpBin[] = "final_jump.bin";
+
+    unsigned short jumpProgram[] = {
+        makeJ(1, 3, 0, 1),     // JAL x1, +6 -> function at 0x0028
+        makeSys(0x000),        // print_int after return
+        makeSys(0x3FF),        // halt
+        makeR(0x0, 0, 0, 0),   // filler, not executed
+        makeI(8, 6, 7),        // LI x6, 8
+        makeR(0xB, 0, 1, 0)    // JR x1
+    };
+
+    createBinProgram(jumpBin, jumpProgram, 6);
+
+    cpu.reset();
+    cpu.clearOutput();
+
+    assert(ProgramLoader::loadBin(cpu.getMemory(), jumpBin) == 12);
+
+    runCpuUntilHalt(cpu, 50);
+
+    assert(strcmp(cpu.getOutput(), "8") == 0);
+    assert(cpu.getPC() == 0x0026);
+
+    remove(jumpBin);
+
+    printf("\n[PASS] Final integration .bin programs test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -791,6 +1000,7 @@ int main() {
     testEcallHaltExecution();
     testGuiStepExecutesOneInstruction();
     testMemoryViewerMatchesRam();
+    testFinalBinPrograms();
 
     CPU guiCpu;
     loadGuiDemoProgram(guiCpu);
