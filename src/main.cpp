@@ -4,7 +4,7 @@
 #include "cpu.h"
 #include "program_loader.h"
 #include "instruction_decoder.h"
-
+#include <string.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -922,6 +922,59 @@ void testRemainingBranchesExecution() {
     printf("[PASS] Remaining branches test passed\n");
 }
 
+void testEcallPrintIntExecution() {
+    CPU cpu;
+
+    unsigned short word = (0x000 << 6) | 7; // ECALL print_int
+
+    // print_int 123
+    cpu.clearOutput();
+    cpu.setPC(0x1000);
+    cpu.getRegisters().setRegister(6, 123); // a0 = x6
+    cpu.getMemory().write16(0x1000, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1002);
+    assert(cpu.getLastHandler() == ZX16::SYS_TYPE);
+    assert(strcmp(cpu.getOutput(), "123") == 0);
+
+    // print_int -1
+    cpu.clearOutput();
+    cpu.setPC(0x1100);
+    cpu.getRegisters().setRegister(6, 0xFFFF);
+    cpu.getMemory().write16(0x1100, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1102);
+    assert(strcmp(cpu.getOutput(), "-1") == 0);
+
+    // print_int -32768
+    cpu.clearOutput();
+    cpu.setPC(0x1200);
+    cpu.getRegisters().setRegister(6, 0x8000);
+    cpu.getMemory().write16(0x1200, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1202);
+    assert(strcmp(cpu.getOutput(), "-32768") == 0);
+
+    // print_int 32767
+    cpu.clearOutput();
+    cpu.setPC(0x1300);
+    cpu.getRegisters().setRegister(6, 0x7FFF);
+    cpu.getMemory().write16(0x1300, word);
+
+    cpu.step();
+
+    assert(cpu.getPC() == 0x1302);
+    assert(strcmp(cpu.getOutput(), "32767") == 0);
+
+    printf("\n[PASS] ECALL print_int test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -942,7 +995,7 @@ int main() {
     testStoreExecution();
     testBeqBneExecution();
     testRemainingBranchesExecution();
-
+    testEcallPrintIntExecution();
     InitWindow(320, 240, "ZX16 Simulator");
     SetTargetFPS(60);
 
@@ -973,7 +1026,7 @@ int main() {
         DrawText("Byte load: PASSED", 165, 114, 9, GREEN);
         DrawText("Word load: PASSED", 165, 128, 9, GREEN);
         DrawText("Store: PASSED", 165, 142, 9, GREEN);
-
+        DrawText("ECALL print_int: PASSED", 165, 156, 9, GREEN);
         EndDrawing();
     }
 

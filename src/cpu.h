@@ -35,6 +35,10 @@ public:
     // Access CPU memory and registers without pointers
     Memory& getMemory();
     RegisterFile& getRegisters();
+    
+    // Output buffer for SYS calls
+    const char* getOutput();
+    void clearOutput();
 
 private:
     Memory memory;                  // 64 KB RAM
@@ -57,6 +61,15 @@ private:
     void handleJType(DecodedInstruction instruction);
     void handleUType(DecodedInstruction instruction);
     void handleSysType(DecodedInstruction instruction);
+
+    static const int OUTPUT_SIZE = 1024;
+    char output[OUTPUT_SIZE];
+    int outputLength;
+    // Output functions for SYS calls
+    void appendChar(char c);
+    void appendText(const char text[]);
+    void printSignedDecimal(unsigned short value);
+    int toSigned16(unsigned short value);
 };
 
 #endif

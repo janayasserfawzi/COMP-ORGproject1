@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include <stdio.h>
 
 CPU::CPU() {
     reset();
@@ -13,6 +14,7 @@ void CPU::reset() {
 
     lastInstruction = 0x0000;   // No instruction fetched yet
     lastHandler = -1;           // No handler called yet
+    clearOutput();                  // Clear console output
 }
 
 unsigned short CPU::getPC() {
@@ -63,6 +65,52 @@ Memory& CPU::getMemory() {
 
 RegisterFile& CPU::getRegisters() {
     return registers;
+}
+
+const char* CPU::getOutput() {
+    return output;
+}
+
+void CPU::clearOutput() {
+    outputLength = 0;
+    output[0] = '\0';
+}
+
+void CPU::appendChar(char c) {
+    if (outputLength < OUTPUT_SIZE - 1) {
+        output[outputLength] = c;
+        outputLength++;
+        output[outputLength] = '\0';
+    }
+}
+
+void CPU::appendText(const char text[]) {
+    int i = 0;
+
+    while (text[i] != '\0') {
+        appendChar(text[i]);
+        i++;
+    }
+}
+
+int CPU::toSigned16(unsigned short value) {
+    if ((value & 0x8000) != 0) {
+        return (int)value - 0x10000;
+    }
+    return value;
+}
+
+void CPU::printSignedDecimal(unsigned short value) {
+    char text[16];
+
+    int signedValue = toSigned16(value);
+
+    sprintf(text, "%d", signedValue);
+
+    appendText(text);
+
+    // Also show it in CLion terminal for now
+    printf("%s", text);
 }
 
 void CPU::dispatch(DecodedInstruction instruction) {
@@ -352,4 +400,9 @@ void CPU::handleUType(DecodedInstruction instruction) {
 
 void CPU::handleSysType(DecodedInstruction instruction) {
     lastHandler = ZX16::SYS_TYPE;    // SYS-Type handler called
+     // ECALL 0x000: print_int a0
+    if (instruction.service == 0x000) {
+        unsigned short a0 = registers.getRegister(6); // a0 = x6
+        printSignedDecimal(a0);
+    }
 }

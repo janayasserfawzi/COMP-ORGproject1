@@ -3,7 +3,7 @@
 
 class Memory {
 public:
-    static const int RAM_SIZE = 65536;
+    static const int RAM_SIZE = 65536; //64KB
 
     Memory();
 
