@@ -3,14 +3,6 @@
   "WorkspaceRootPath": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\.vs\\launch.vs.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:.vs\\launch.vs.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
@@ -21,6 +13,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\gui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\.vs\\launch.vs.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:.vs\\launch.vs.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\cpu.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -37,11 +37,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "launch.vs.json",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\.vs\\launch.vs.json",
               "RelativeDocumentMoniker": ".vs\\launch.vs.json",
@@ -54,26 +54,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "gui.cpp",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.cpp",
               "RelativeDocumentMoniker": "src\\gui.cpp",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.cpp",
               "RelativeToolTip": "src\\gui.cpp",
-              "ViewState": "AgIAACUAAAAAAAAAAAAQwD8AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAQwJ8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-07-02T08:24:33.914Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "gui.h",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.h",
               "RelativeDocumentMoniker": "src\\gui.h",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\gui.h",
               "RelativeToolTip": "src\\gui.h",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAQwBsAAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAABoAAAAAAAAAAAAQwDQAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2026-07-02T08:24:05.532Z",
               "EditorCaption": ""
@@ -101,26 +101,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "main.cpp",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\main.cpp",
               "RelativeDocumentMoniker": "src\\main.cpp",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\src\\main.cpp",
               "RelativeToolTip": "src\\main.cpp",
-              "ViewState": "AgIAAK0CAAAAAAAAAAAQwMcCAAABAAAAAAAAAA==",
+              "ViewState": "AgIAANwCAAAAAAAAAAAkwPUCAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-07-01T14:25:02.629Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "CMakeLists.txt",
               "DocumentMoniker": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\CMakeLists.txt",
               "RelativeDocumentMoniker": "CMakeLists.txt",
               "ToolTip": "C:\\Users\\Mariam\\OneDrive\\Documents\\summer2026\\COMP-ORGproject1\\CMakeLists.txt",
               "RelativeToolTip": "CMakeLists.txt",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAswCAAAAAtAAAAAAAAAA==",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAuwCAAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
               "WhenOpened": "2026-07-01T14:24:25.082Z",
               "EditorCaption": ""

@@ -648,6 +648,31 @@ void testEcallHaltExecution() {
     printf("[PASS] ECALL halt test passed\n");
 }
 
+void loadGuiDemoProgram(CPU& cpu) {
+    cpu.reset();
+    cpu.clearOutput();
+
+    // Demo program:
+    // ADDI x6, 5
+    // ECALL print_int
+    // LI x6, '\n'
+    // ECALL print_char
+    // LI x6, 6
+    // ECALL print_int
+    // ECALL halt
+
+    cpu.getMemory().write16(0x0020, makeI(5, 6, 0));
+    cpu.getMemory().write16(0x0022, makeSys(0x000));
+
+    cpu.getMemory().write16(0x0024, makeI(0x0A, 6, 7));
+    cpu.getMemory().write16(0x0026, makeSys(0x001));
+
+    cpu.getMemory().write16(0x0028, makeI(6, 6, 7));
+    cpu.getMemory().write16(0x002A, makeSys(0x000));
+
+    cpu.getMemory().write16(0x002C, makeSys(0x3FF));
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -673,37 +698,58 @@ int main() {
     testEcallPrintCharExecution();
     testEcallHaltExecution();
 
-    CPU consoleCpu;
-
-    unsigned short printInt = makeSys(0x000);
-    unsigned short printChar = makeSys(0x001);
-
-    consoleCpu.clearOutput();
-
-    consoleCpu.setPC(0x5000);
-    consoleCpu.getRegisters().setRegister(6, 123);
-    consoleCpu.getMemory().write16(0x5000, printInt);
-    consoleCpu.step();
-
-    consoleCpu.setPC(0x5002);
-    consoleCpu.getRegisters().setRegister(6, 0x000A);
-    consoleCpu.getMemory().write16(0x5002, printChar);
-    consoleCpu.step();
-
-    consoleCpu.setPC(0x5004);
-    consoleCpu.getRegisters().setRegister(6, 0x0041);
-    consoleCpu.getMemory().write16(0x5004, printChar);
-    consoleCpu.step();
+    CPU guiCpu;
+    loadGuiDemoProgram(guiCpu);
 
     Gui gui;
     gui.open();
 
+    bool running = false;
     int frameNumber = 0;
+    int runDelay = 0;
 
     while (!gui.shouldClose()) {
         frameNumber++;
 
-        gui.draw("All tests passed", consoleCpu.getOutput(), frameNumber);
+        GuiAction action = gui.draw(
+            "All tests passed",
+            guiCpu.getOutput(),
+            frameNumber,
+            running,
+            guiCpu.isHalted(),
+            guiCpu.getPC()
+        );
+
+        if (action == GUI_ACTION_RUN_PAUSE) {
+            if (!guiCpu.isHalted()) {
+                running = !running;
+            }
+        }
+
+        if (action == GUI_ACTION_STEP) {
+            if (!running && !guiCpu.isHalted()) {
+                guiCpu.step();
+            }
+        }
+
+        if (action == GUI_ACTION_RESET) {
+            loadGuiDemoProgram(guiCpu);
+            running = false;
+            runDelay = 0;
+        }
+
+        if (running && !guiCpu.isHalted()) {
+            runDelay++;
+
+            if (runDelay >= 30) {
+                guiCpu.step();
+                runDelay = 0;
+            }
+        }
+
+        if (guiCpu.isHalted()) {
+            running = false;
+        }
     }
 
     gui.close();
