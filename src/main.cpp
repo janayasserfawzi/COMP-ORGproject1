@@ -673,6 +673,98 @@ void loadGuiDemoProgram(CPU& cpu) {
     cpu.getMemory().write16(0x002C, makeSys(0x3FF));
 }
 
+void handleGuiAction(CPU& cpu, GuiAction action, bool& running, int& runDelay) {
+    if (action == GUI_ACTION_RUN_PAUSE) {
+        if (!cpu.isHalted()) {
+            running = !running;
+        }
+    }
+
+    if (action == GUI_ACTION_STEP) {
+        if (!running && !cpu.isHalted()) {
+            cpu.step();
+        }
+    }
+
+    if (action == GUI_ACTION_RESET) {
+        loadGuiDemoProgram(cpu);
+        running = false;
+        runDelay = 0;
+    }
+
+    if (cpu.isHalted()) {
+        running = false;
+    }
+}
+
+void testGuiStepExecutesOneInstruction() {
+    CPU cpu;
+
+    bool running = false;
+    int runDelay = 0;
+
+    cpu.reset();
+
+    // Program:
+    // 0x0020: LI x6, 5
+    // 0x0022: LI x7, 6
+    // 0x0024: ECALL halt
+
+    cpu.getMemory().write16(0x0020, makeI(5, 6, 7));
+    cpu.getMemory().write16(0x0022, makeI(6, 7, 7));
+    cpu.getMemory().write16(0x0024, makeSys(0x3FF));
+
+    assert(cpu.getPC() == 0x0020);
+    assert(cpu.getRegisters().getRegister(6) == 0x0000);
+    assert(cpu.getRegisters().getRegister(7) == 0x0000);
+
+    // Simulate pressing Step once
+    handleGuiAction(cpu, GUI_ACTION_STEP, running, runDelay);
+
+    // Only first instruction should execute
+    assert(cpu.getPC() == 0x0022);
+    assert(cpu.getRegisters().getRegister(6) == 5);
+    assert(cpu.getRegisters().getRegister(7) == 0x0000);
+
+    // Simulate pressing Step once again
+    handleGuiAction(cpu, GUI_ACTION_STEP, running, runDelay);
+
+    // Only second instruction should execute
+    assert(cpu.getPC() == 0x0024);
+    assert(cpu.getRegisters().getRegister(6) == 5);
+    assert(cpu.getRegisters().getRegister(7) == 6);
+
+    printf("[PASS] GUI step executes one instruction test passed\n");
+}
+
+void testMemoryViewerMatchesRam() {
+    CPU cpu;
+    Gui gui;
+
+    char line[80];
+
+    cpu.getMemory().write8(0x4000, 0x12);
+    cpu.getMemory().write8(0x4001, 0x34);
+    cpu.getMemory().write8(0x4002, 0xAB);
+    cpu.getMemory().write8(0x4003, 0xCD);
+    cpu.getMemory().write8(0x4004, 0x00);
+    cpu.getMemory().write8(0x4005, 0xFF);
+    cpu.getMemory().write8(0x4006, 0x55);
+    cpu.getMemory().write8(0x4007, 0xAA);
+
+    gui.formatMemoryLine(cpu, 0x4000, line);
+
+    assert(strcmp(line, "0x4000: 12 34 AB CD 00 FF 55 AA") == 0);
+
+    cpu.getMemory().write8(0x4003, 0x99);
+
+    gui.formatMemoryLine(cpu, 0x4000, line);
+
+    assert(strcmp(line, "0x4000: 12 34 AB 99 00 FF 55 AA") == 0);
+
+    printf("[PASS] Memory viewer test passed\n");
+}
+
 int main() {
     testMemory();
     testRegisterFile();
@@ -697,6 +789,8 @@ int main() {
     testEcallPrintIntExecution();
     testEcallPrintCharExecution();
     testEcallHaltExecution();
+    testGuiStepExecutesOneInstruction();
+    testMemoryViewerMatchesRam();
 
     CPU guiCpu;
     loadGuiDemoProgram(guiCpu);
@@ -719,23 +813,7 @@ int main() {
             guiCpu
         );
 
-        if (action == GUI_ACTION_RUN_PAUSE) {
-            if (!guiCpu.isHalted()) {
-                running = !running;
-            }
-        }
-
-        if (action == GUI_ACTION_STEP) {
-            if (!running && !guiCpu.isHalted()) {
-                guiCpu.step();
-            }
-        }
-
-        if (action == GUI_ACTION_RESET) {
-            loadGuiDemoProgram(guiCpu);
-            running = false;
-            runDelay = 0;
-        }
+        handleGuiAction(guiCpu, action, running, runDelay);
 
         if (running && !guiCpu.isHalted()) {
             runDelay++;

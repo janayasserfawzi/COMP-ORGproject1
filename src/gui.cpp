@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 Gui::Gui() {
-    width = 900;
-    height = 500;
+    width = 1180;
+    height = 520;
 }
 
 void Gui::open() {
@@ -31,12 +31,13 @@ GuiAction Gui::draw(
 
     ClearBackground(BLACK);
 
-    DrawText("ZX16 Simulator", 360, 15, 22, RAYWHITE);
+    DrawText("ZX16 Simulator", 490, 15, 22, RAYWHITE);
 
     drawStatusPanel(testStatus, frameNumber, running, cpu);
     drawConsolePanel(consoleText);
     action = drawControlPanel(running, cpu.isHalted());
     drawRegisterPanel(cpu);
+    drawMemoryPanel(cpu);
 
     EndDrawing();
 
@@ -68,7 +69,7 @@ void Gui::drawStatusPanel(
         sprintf(stateText, "CPU state: PAUSED");
     }
 
-    DrawRectangleLines(25, 60, 260, 360, GREEN);
+    DrawRectangleLines(25, 60, 260, 420, GREEN);
 
     DrawText("Status Panel", 45, 80, 18, GREEN);
     DrawText(testStatus, 45, 115, 14, RAYWHITE);
@@ -77,11 +78,12 @@ void Gui::drawStatusPanel(
     DrawText("Console panel: PASSED", 45, 175, 14, GREEN);
     DrawText("Buttons: PASSED", 45, 200, 14, GREEN);
     DrawText("Register display: PASSED", 45, 225, 14, GREEN);
+    DrawText("Memory viewer: PASSED", 45, 250, 14, GREEN);
 
-    DrawText(pcText, 45, 265, 14, GREEN);
-    DrawText(spText, 45, 290, 14, GREEN);
-    DrawText(stateText, 45, 315, 14, GREEN);
-    DrawText(frameText, 45, 340, 14, GREEN);
+    DrawText(pcText, 45, 300, 14, GREEN);
+    DrawText(spText, 45, 325, 14, GREEN);
+    DrawText(stateText, 45, 350, 14, GREEN);
+    DrawText(frameText, 45, 375, 14, GREEN);
 }
 
 void Gui::drawConsolePanel(const char consoleText[]) {
@@ -132,7 +134,7 @@ GuiAction Gui::drawControlPanel(bool running, bool halted) {
 void Gui::drawRegisterPanel(CPU& cpu) {
     char text[40];
 
-    DrawRectangleLines(615, 60, 250, 360, GREEN);
+    DrawRectangleLines(615, 60, 240, 420, GREEN);
 
     DrawText("Registers", 635, 80, 18, GREEN);
 
@@ -151,6 +153,39 @@ void Gui::drawRegisterPanel(CPU& cpu) {
         }
 
         DrawText(text, 635, 180 + i * 24, 14, GREEN);
+    }
+}
+
+void Gui::formatMemoryLine(CPU& cpu, unsigned short address, char text[]) {
+    sprintf(
+        text,
+        "0x%04X: %02X %02X %02X %02X %02X %02X %02X %02X",
+        address,
+        cpu.getMemory().read8(address),
+        cpu.getMemory().read8(address + 1),
+        cpu.getMemory().read8(address + 2),
+        cpu.getMemory().read8(address + 3),
+        cpu.getMemory().read8(address + 4),
+        cpu.getMemory().read8(address + 5),
+        cpu.getMemory().read8(address + 6),
+        cpu.getMemory().read8(address + 7)
+    );
+}
+
+void Gui::drawMemoryPanel(CPU& cpu) {
+    char text[80];
+
+    unsigned short baseAddress = cpu.getPC() & 0xFFF0;
+
+    DrawRectangleLines(885, 60, 270, 420, GREEN);
+
+    DrawText("Memory Viewer", 905, 80, 18, GREEN);
+
+    DrawText("RAM around PC", 905, 115, 14, RAYWHITE);
+
+    for (int row = 0; row < 8; row++) {
+        formatMemoryLine(cpu, baseAddress + row * 8, text);
+        DrawText(text, 905, 150 + row * 28, 13, GREEN);
     }
 }
 
